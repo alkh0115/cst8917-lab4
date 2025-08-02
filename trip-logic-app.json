@@ -121,7 +121,7 @@
                         },
                         "else": {
                             "actions": {
-                                "Post_adaptive_card_and_wait_for_a_response_2": {
+                                "Post_card_no_issues": {
                                     "type": "ApiConnectionWebhook",
                                     "inputs": {
                                         "host": {
