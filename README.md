@@ -1,3 +1,4 @@
+
 # Real-Time Trip Event Analysis – Azure Event-Driven Architecture
 
 This project demonstrates a real-time taxi trip analysis system using Azure Event Hub, Azure Functions, and Logic Apps to classify trips and notify teams with insights.
@@ -6,18 +7,17 @@ This project demonstrates a real-time taxi trip analysis system using Azure Even
 
 ## Architecture Overview
 
-![Architecture Diagram](https://github.com/alkh0115/cst8917-lab4/blob/main/logicapp-workflow-screenshot.JPG?raw=true)
-
+![Architecture Diagram](logicapp-workflow-screenshot.JPG)
 
 **Components:**
 
 - **Azure Event Hub:** Ingests trip events in real-time.
-- **Azure Function (`func-trip-analyzer-analyze-tripp`)**: Processes each trip, detects patterns like cash payments or suspicious vendor activity.
+- **Azure Function (`func-trip-analyzer --> analyze-trippp`)**: Processes each trip, detects patterns like cash payments or suspicious vendor activity.
 - **Azure Logic App (`trip-logic-app`)**: 
   - Triggers when a new event is available in Event Hub.
   - Iterates over each trip item.
   - Applies conditions to classify trips as:
-    - 🔴 **Suspicious Trip**
+    - ⚠️ **Suspicious Trip**
     - 🚨 **Interesting Trip**
     - ✅ **Normal Trip**
   - Sends Adaptive Cards to Microsoft Teams channel accordingly.
@@ -29,14 +29,14 @@ This project demonstrates a real-time taxi trip analysis system using Azure Even
 The `func-trip-analyzer-analyze-tripp` function:
 - Accepts incoming trip data in JSON format.
 - Analyzes each trip for:
-  - Vendor ID anomalies (`V999`)
+  - Vendor ID anomalies (`V009`)
   - Payment type (`CashPayment`)
   - Distance or passenger irregularities
 - Returns enriched trip records with computed `insights` (e.g., `SuspiciousVendorActivity`, `CashPayment`, etc.).
 
 Sample logic:
 ```python
-if vendor_id == 'V999':
+if vendor_id == 'V009':
     insights.append('SuspiciousVendorActivity')
 if payment_type == 2:
     insights.append('CashPayment')
@@ -46,51 +46,62 @@ if payment_type == 2:
 
 ## Example Input & Output
 
-### Input Sample
+### ✅ Normal Input
 ```json
 {
-  "vendor": "V100",
-  "distance": 7.55,
-  "passengers": 3,
-  "payment": 1
+  "vendorID": "V008",
+  "tripDistance": 6.2,
+  "passengerCount": 1,
+  "paymentType": 1
 }
 ```
-
-### Output (Normal)
-```json
-{
-  "vendor": "V100",
-  "distance": 7.55,
-  "passengers": 3,
-  "payment": 1,
-  "summary": "Trip normal",
-  "insights": []
-}
+### Output
+```
+Summary: Trip normal
+Insights: []
 ```
 
-### Output (Suspicious)
+### 🚨 Interesting Input
 ```json
 {
-  "vendor": "V999",
-  "distance": 5.5,
-  "passengers": 1,
-  "payment": 2,
-  "summary": "Interesting trip with suspicious vendor",
-  "insights": ["CashPayment", "SuspiciousVendorActivity"]
+  "vendorID": "V010",
+  "tripDistance": 18.5,
+  "passengerCount": 2,
+  "paymentType": 2
 }
+```
+### Output
+```
+Summary: Interesting trip
+Insights: ["LongTrip", "CashPayment"]
+```
+
+### ⚠️ Suspicious Input
+```json
+{
+  "vendorID": "V009",
+  "tripDistance": 0.8,
+  "passengerCount": 1,
+  "paymentType": 2
+}
+```
+### Output
+```
+Summary: Interesting trip with suspicious vendor
+Insights: ["CashPayment", "SuspiciousVendorActivity"]
 ```
 
 ---
 
-## Adaptive Card Example (Posted to Teams)
+## Adaptive Card Examples (Posted to Teams)
 
 - **Suspicious Trip Detected**
-  - 🔴 Header: "Suspicious Trip Detected"
+  - ⚠️ Header: "Suspicious Vendor Activity Detected"
   - Details: Vendor, Distance, Passengers, Payment, Insights
 
 - **Interesting Trip**
   - 🚨 Header: "Interesting Trip Detected"
-  - Triggered by Cash Payment alone.
+  - Triggered by Cash Payment or long-distance.
 
 - **Normal Trip**
   - ✅ Header: "Trip Analyzed - No Issues"
@@ -105,6 +116,4 @@ if payment_type == 2:
 ---
 
 ## Demo Video
-
-
 
